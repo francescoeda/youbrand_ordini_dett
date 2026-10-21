@@ -1,3 +1,4 @@
+import io
 import urllib.parse
 from fpdf import FPDF
 import streamlit as st
@@ -784,21 +785,47 @@ st.write(f"**IVA 22%:** € {vat:.2f}")
 st.markdown(f"### **TOTALE IVATO: € {total:.2f}**")
 
 
-# Funzione per generare il PDF dell'ordine con Note e Condizioni Fisse
+# Funzione per generare il PDF dell'ordine pulito e valido al 100%
 def genera_pdf():
     pdf = FPDF()
     pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=15)
+
+    def clean_text(txt):
+        if not txt:
+            return ""
+        replacements = {
+            "à": "a'",
+            "è": "e'",
+            "é": "e'",
+            "ì": "i'",
+            "ò": "o'",
+            "ù": "u'",
+            "’": "'",
+            "“": '"',
+            "”": '"',
+            "«": '"',
+            "»": '"',
+            "€": "EUR",
+            "≈": "",
+            "•": "-",
+        }
+        for orig, repl in replacements.items():
+            txt = txt.replace(orig, repl)
+        return txt.encode("latin-1", "replace").decode("latin-1")
 
     # Intestazione Brand Completa nel PDF
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 6, "CREA LA TUA LINEA", 0, 1, "C")
+    pdf.cell(0, 6, clean_text("CREA LA TUA LINEA"), 0, 1, "C")
     pdf.set_font("Arial", "B", 20)
-    pdf.cell(0, 10, "YOUBRAND", 0, 1, "C")
+    pdf.cell(0, 10, clean_text("YOUBRAND"), 0, 1, "C")
     pdf.set_font("Arial", "B", 9)
     pdf.cell(
         0,
         5,
-        "PRODOTTI PERSONALIZZATI PER BARBER, PARRUCCHIERI ED ESTETISTE",
+        clean_text(
+            "PRODOTTI PERSONALIZZATI PER BARBER, PARRUCCHIERI ED ESTETISTE"
+        ),
         0,
         1,
         "C",
@@ -807,32 +834,45 @@ def genera_pdf():
 
     # Dati Anagrafici
     pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 7, "ANAGRAFICA CLIENTE / SALONE", 0, 1, "L")
+    pdf.cell(0, 7, clean_text("ANAGRAFICA CLIENTE / SALONE"), 0, 1, "L")
     pdf.set_font("Arial", "", 10)
-    pdf.cell(0, 6, f"Ragione Sociale: {ragione_sociale}", 0, 1, "L")
     pdf.cell(
-        0, 6, f"Indirizzo: {indirizzo} - {cap} {citta} ({provincia})", 0, 1, "L"
+        0, 6, clean_text(f"Ragione Sociale: {ragione_sociale}"), 0, 1, "L"
     )
-    pdf.cell(0, 6, f"P.IVA: {piva} | C.F.: {cf}", 0, 1, "L")
-    pdf.cell(0, 6, f"Telefono: {telefono} | Email: {email}", 0, 1, "L")
-    pdf.cell(0, 6, f"Codice Univoco / PEC: {codice_univoco}", 0, 1, "L")
+    pdf.cell(
+        0,
+        6,
+        clean_text(
+            f"Indirizzo: {indirizzo} - {cap} {citta} ({provincia})"
+        ),
+        0,
+        1,
+        "L",
+    )
+    pdf.cell(0, 6, clean_text(f"P.IVA: {piva} | C.F.: {cf}"), 0, 1, "L")
+    pdf.cell(
+        0, 6, clean_text(f"Telefono: {telefono} | Email: {email}"), 0, 1, "L"
+    )
+    pdf.cell(
+        0, 6, clean_text(f"Codice Univoco / PEC: {codice_univoco}"), 0, 1, "L"
+    )
     pdf.ln(8)
 
     # Tabella Prodotti
     pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 7, "PRODOTTI ORDINATI", 0, 1, "L")
+    pdf.cell(0, 7, clean_text("PRODOTTI ORDINATI"), 0, 1, "L")
     pdf.set_font("Arial", "B", 10)
-    pdf.cell(110, 7, "Prodotto", 1)
-    pdf.cell(20, 7, "Q.ta", 1, 0, "C")
-    pdf.cell(30, 7, "Prezzo U.", 1, 0, "R")
-    pdf.cell(30, 7, "Totale", 1, 1, "R")
+    pdf.cell(110, 7, clean_text("Prodotto"), 1)
+    pdf.cell(20, 7, clean_text("Q.ta"), 1, 0, "C")
+    pdf.cell(30, 7, clean_text("Prezzo U."), 1, 0, "R")
+    pdf.cell(30, 7, clean_text("Totale"), 1, 1, "R")
 
     pdf.set_font("Arial", "", 9)
     for i, prod in enumerate(catalogo):
         qta = st.session_state.qtys[i]
         if qta > 0:
             tot_prod = prod["price"] * qta
-            pdf.cell(110, 6, str(prod["name"][:50]), 1)
+            pdf.cell(110, 6, clean_text(str(prod["name"][:50])), 1)
             pdf.cell(20, 6, str(qta), 1, 0, "C")
             pdf.cell(30, 6, f"EUR {prod['price']:.2f}", 1, 0, "R")
             pdf.cell(30, 6, f"EUR {tot_prod:.2f}", 1, 1, "R")
@@ -841,61 +881,62 @@ def genera_pdf():
 
     # Totali
     pdf.set_font("Arial", "B", 10)
-    pdf.cell(160, 6, "Imponibile:", 0, 0, "R")
+    pdf.cell(160, 6, clean_text("Imponibile:"), 0, 0, "R")
     pdf.cell(30, 6, f"EUR {subtotal:.2f}", 0, 1, "R")
-    pdf.cell(160, 6, "Trasporto:", 0, 0, "R")
+    pdf.cell(160, 6, clean_text("Trasporto:"), 0, 0, "R")
     pdf.cell(30, 6, f"EUR {shipping:.2f}", 0, 1, "R")
-    pdf.cell(160, 6, "IVA 22%:", 0, 0, "R")
+    pdf.cell(160, 6, clean_text("IVA 22%:"), 0, 0, "R")
     pdf.cell(30, 6, f"EUR {vat:.2f}", 0, 1, "R")
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(160, 8, "TOTALE IVATO:", 0, 0, "R")
+    pdf.cell(160, 8, clean_text("TOTALE IVATO:"), 0, 0, "R")
     pdf.cell(30, 8, f"EUR {total:.2f}", 0, 1, "R")
     pdf.ln(8)
 
-    # NOTE AGGIUNTIVE SPECIFICHE (SE INSERITE)
+    # NOTE AGGIUNTIVE SPECIFICHE
     if note_ordine.strip():
         pdf.set_font("Arial", "B", 9)
-        pdf.cell(0, 5, "NOTE AGGIUNTIVE:", 0, 1, "L")
+        pdf.cell(0, 5, clean_text("NOTE AGGIUNTIVE:"), 0, 1, "L")
         pdf.set_font("Arial", "", 8)
-        pdf.multi_cell(0, 4, note_ordine.strip(), 1)
+        pdf.multi_cell(0, 4, clean_text(note_ordine.strip()), 1)
         pdf.ln(5)
 
-    # NOTE E CONDIZIONI FISSE IN BASSO AL PDF
+    # NOTE E CONDIZIONI FISSE
     pdf.set_font("Arial", "B", 9)
-    pdf.cell(0, 5, "NOTE E CONDIZIONI GENERALI:", 0, 1, "L")
+    pdf.cell(0, 5, clean_text("NOTE E CONDIZIONI GENERALI:"), 0, 1, "L")
     pdf.set_font("Arial", "", 7)
 
     testo_note = (
         "- Inviare l'ordine per email allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).\n"
-        "- Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.\n"
-        "- L'ordine minimo per la personalizzazione sarà di 12 pz per referenza minimo 6 referenze.\n"
-        "- Il costo dello studio grafico sarà di EUR 100 una tantum (comprensive tutte le grafiche), che verrà fatturato sull'ordine definitivo.\n"
-        "- Il costo di ogni etichetta da aggiungere al prodotto sarà così determinato:\n"
+        "- Nel caso di un ordine di prova, verra' prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.\n"
+        "- L'ordine minimo per la personalizzazione sara' di 12 pz per referenza minimo 6 referenze.\n"
+        "- Il costo dello studio grafico sara' di EUR 100 una tantum (comprensive tutte le grafiche), che verra' fatturato sull'ordine definitivo.\n"
+        "- Il costo di ogni etichetta da aggiungere al prodotto sara' cosi' determinato:\n"
         "  * COSTO ETICHETTA A 2 COLORI SEMPLICE EUR 0,12 CAD.\n"
         "  * COSTO ETICHETTA A 2 COLORI CON LAVORAZIONI PARTICOLARI ANCHE 3D E/O LUCIDO/OPACO EUR 0,22 CAD.\n"
         "  * COSTO ETICHETTA QUADRICROMIA CON LAVORAZIONI ANCHE PARTICOLARI 3D E/O LUCIDO/OPACO EUR 0,32 CAD.\n"
         "- Inoltre possiamo effettuare REALIZZAZIONE FOTO PRODOTTI E BROCHURE PDF DELLA LINEA PER CONTO DEL CLIENTE EUR 150,00"
     )
 
-    pdf.multi_cell(0, 3.5, testo_note, 1)
+    pdf.multi_cell(0, 3.5, clean_text(testo_note), 1)
 
-    out = pdf.output()
-    if isinstance(out, str):
-        return out.encode("latin-1")
-    return bytes(out)
+    # Output binario pulito per Streamlit
+    pdf_output = pdf.output(dest="S")
+    if isinstance(pdf_output, str):
+        return pdf_output.encode("latin-1")
+    return bytes(pdf_output)
 
 
-# Generazione e solo pulsante di scaricamento PDF
+# Generazione e pulsante di scaricamento PDF
 if not ragione_sociale.strip() or subtotal == 0:
     st.info(
         "Compila la Ragione Sociale e seleziona almeno un prodotto per abilitare il download del PDF."
     )
 else:
-    pdf_bytes = genera_pdf()
+    pdf_data = genera_pdf()
 
     st.download_button(
         label="📄 Scarica Ordine in PDF",
-        data=pdf_bytes,
+        data=pdf_data,
         file_name=f"Ordine_{ragione_sociale.replace(' ', '_')}.pdf",
         mime="application/pdf",
     )
