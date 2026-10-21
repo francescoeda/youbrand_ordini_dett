@@ -860,9 +860,10 @@ def genera_pdf():
         "- Inoltre possiamo effettuare REALIZZAZIONE FOTO PRODOTTI E BROCHURE PDF DELLA LINEA PER CONTO DEL CLIENTE EUR 150,00"
     )
 
-    pdf.multi_cell(0, 3.5, testo_note, 1)
+     pdf.multi_cell(0, 3.5, testo_note, 1)
 
-    return bytes(pdf.output())
+    # Restituisce direttamente l'output del PDF
+    return pdf.output()
 
 
 # Generazione e solo pulsante di scaricamento PDF
