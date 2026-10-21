@@ -849,7 +849,7 @@ def genera_pdf():
     pdf.set_font("Arial", "", 7)
 
     testo_note = (
-        "- Inviare l'ordine per email a: info@narcosbarbershop.it allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).\n"
+        "- Inviare l'ordine per email allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).\n"
         "- Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.\n"
         "- L'ordine minimo per la personalizzazione sarà di 12 pz per referenza minimo 6 referenze.\n"
         "- Il costo dello studio grafico sarà di EUR 100 una tantum (comprensive tutte le grafiche), che verrà fatturato sull'ordine definitivo.\n"
@@ -860,7 +860,7 @@ def genera_pdf():
         "- Inoltre possiamo effettuare REALIZZAZIONE FOTO PRODOTTI E BROCHURE PDF DELLA LINEA PER CONTO DEL CLIENTE EUR 150,00"
     )
 
-     pdf.multi_cell(0, 3.5, testo_note, 1)
+    pdf.multi_cell(0, 3.5, testo_note, 1)
 
     # Restituisce direttamente l'output del PDF
     return pdf.output()
