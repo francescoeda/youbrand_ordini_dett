@@ -65,6 +65,23 @@ telefono = st.text_input("Telefono", placeholder="Telefono")
 codice_univoco = st.text_input("Cod. Univoco (SDI) / PEC", placeholder="SDI o PEC")
 email = st.text_input("Email", placeholder="Email aziendale")
 
+# BLOCCO NOTE E CONDIZIONI VISIBILE A SCHERMO
+st.markdown("---")
+with st.expander("📌 **NOTE E CONDIZIONI GENERALI DI VENDITA (Leggi Prima di Ordinare)**", expanded=True):
+    st.markdown(
+        """
+        * **Invio File Logo:** Inviare l'ordine per email allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
+        * **Ordine di Prova:** Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.
+        * **Minimi d'Ordine:** L'ordine minimo per la personalizzazione sarà di **12 pz per referenza**, per un **minimo di 6 referenze**.
+        * **Studio Grafico:** Il costo dello studio grafico sarà di **EUR 100 una tantum** (comprensive tutte le grafiche), che verrà fatturato sull'ordine definitivo.
+        * **Costo Etichette Aggiuntive:**
+            * *Etichetta 2 Colori Semplice:* **EUR 0,12 CAD.**
+            * *Etichetta 2 Colori con lavorazioni particolari (3D / Lucido / Opaco):* **EUR 0,22 CAD.**
+            * *Etichetta Quadricromia con lavorazioni particolari (3D / Lucido / Opaco):* **EUR 0,32 CAD.**
+        * **Servizi Extra:** Realizzazione foto prodotti e brochure PDF della linea per conto del cliente: **EUR 150,00**.
+        """
+    )
+
 st.markdown("---")
 st.subheader("📦 Listino Prodotti")
 
@@ -862,8 +879,10 @@ def genera_pdf():
 
     pdf.multi_cell(0, 3.5, testo_note, 1)
 
-    # Restituisce direttamente l'output del PDF
-    return pdf.output()
+    out = pdf.output()
+    if isinstance(out, str):
+        return out.encode("latin-1")
+    return bytes(out)
 
 
 # Generazione e solo pulsante di scaricamento PDF
