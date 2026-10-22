@@ -68,13 +68,16 @@ email = st.text_input("Email", placeholder="Email aziendale")
 
 # BLOCCO NOTE E CONDIZIONI VISIBILE A SCHERMO
 st.markdown("---")
-with st.expander("📌 **NOTE E CONDIZIONI GENERALI DI VENDITA (Leggi Prima di Ordinare)**", expanded=True):
+with st.expander(
+    "📌 **NOTE E CONDIZIONI GENERALI DI VENDITA (Leggi Prima di Ordinare)**",
+    expanded=True,
+):
     st.markdown(
         """
-        * **Invio File Logo:** Inviare l'ordine per email allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
+        * **Invio File e Logo:**Inviare l'ordine ed eventuali file grafici (possibilmente vettoriale) per email a : grafica@youbrand.info ,  con indicazione sui colori preferiti per l'etichetta.
         * **Ordine di Prova:** Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.
         * **Minimi d'Ordine:** L'ordine minimo per la personalizzazione sarà di **12 pz per referenza**, per un **minimo di 6 referenze**.
-        * **Studio Grafico:** Il costo dello studio grafico sarà di **EUR 100 una tantum** (comprensive tutte le grafiche), che verrà fatturato sull'ordine definitivo.
+        * **Studio Grafico:** Il costo dello studio grafico sarà di **EUR 100 una tantum** (comprensive tutte le grafiche), che verrà fatturato sull'ordine definitivo.  A meno che provvediate voi a fornirci le grafiche.
         * **Costo Etichette Aggiuntive:**
             * *Etichetta 2 Colori Semplice:* **EUR 0,12 CAD.**
             * *Etichetta 2 Colori con lavorazioni particolari (3D / Lucido / Opaco):* **EUR 0,22 CAD.**
@@ -772,6 +775,18 @@ total = subtotal + shipping + vat
 
 st.markdown("---")
 
+# 🎨 BLOCCO SCELTA GRAFICHE (CHECKBOX)
+st.subheader("🎨 Gestione Grafiche")
+col_g1, col_g2 = st.columns(2)
+with col_g1:
+    grafica_cliente = st.checkbox("Grafiche fornite dal cliente")
+with col_g2:
+    grafica_reparto = st.checkbox(
+        "Grafiche gestite dal nostro reparto grafico"
+    )
+
+st.markdown("---")
+
 note_ordine = st.text_area(
     "📝 Note aggiuntive per questo ordine specifico (opzionale)",
     placeholder="Inserisci eventuali note extra...",
@@ -879,6 +894,16 @@ def genera_pdf():
 
     pdf.ln(5)
 
+    # SEZIONE SCELTA GRAFICHE NEL PDF
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(0, 6, clean_text("GESTIONE GRAFICHE:"), 0, 1, "L")
+    pdf.set_font("Arial", "", 9)
+    val_g1 = "[X] Grafiche fornite dal cliente" if grafica_cliente else "[ ] Grafiche fornite dal cliente"
+    val_g2 = "[X] Grafiche gestite dal nostro reparto grafico" if grafica_reparto else "[ ] Grafiche gestite dal nostro reparto grafico"
+    pdf.cell(0, 5, clean_text(val_g1), 0, 1, "L")
+    pdf.cell(0, 5, clean_text(val_g2), 0, 1, "L")
+    pdf.ln(5)
+
     # Totali
     pdf.set_font("Arial", "B", 10)
     pdf.cell(160, 6, clean_text("Imponibile:"), 0, 0, "R")
@@ -906,10 +931,10 @@ def genera_pdf():
     pdf.set_font("Arial", "", 7)
 
     testo_note = (
-        "- Inviare l'ordine per email allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).\n"
+        "- Inviare l'ordine ed eventuali file grafici (possibilmente vettoriale) per email a : grafica@youbrand.info ,  con indicazione sui colori preferiti per l'etichetta.\n"
         "- Nel caso di un ordine di prova, verra' prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.\n"
         "- L'ordine minimo per la personalizzazione sara' di 12 pz per referenza minimo 6 referenze.\n"
-        "- Il costo dello studio grafico sara' di EUR 100 una tantum (comprensive tutte le grafiche), che verra' fatturato sull'ordine definitivo.\n"
+        "- Il costo dello studio grafico sara' di EUR 100 una tantum (comprensive tutte le grafiche), che verra' fatturato sull'ordine definitivo. A meno che provvediate voi a fornirci le grafiche.\n"
         "- Il costo di ogni etichetta da aggiungere al prodotto sara' cosi' determinato:\n"
         "  * COSTO ETICHETTA A 2 COLORI SEMPLICE EUR 0,12 CAD.\n"
         "  * COSTO ETICHETTA A 2 COLORI CON LAVORAZIONI PARTICOLARI ANCHE 3D E/O LUCIDO/OPACO EUR 0,22 CAD.\n"
