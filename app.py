@@ -1,4 +1,8 @@
 import io
+import smtplib
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import urllib.parse
 from fpdf import FPDF
 import streamlit as st
@@ -74,10 +78,10 @@ with st.expander(
 ):
     st.markdown(
         """
-        * **Invio File e Logo:**Inviare l'ordine ed eventuali file grafici (possibilmente vettoriale) per email a : grafica@youbrand.info ,  con indicazione sui colori preferiti per l'etichetta.
+        * **Invio File Logo:** Inviare l'ordine per email allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
         * **Ordine di Prova:** Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.
         * **Minimi d'Ordine:** L'ordine minimo per la personalizzazione sarà di **12 pz per referenza**, per un **minimo di 6 referenze**.
-        * **Studio Grafico:** Il costo dello studio grafico sarà di **EUR 100 una tantum** (comprensive tutte le grafiche), che verrà fatturato sull'ordine definitivo.  A meno che provvediate voi a fornirci le grafiche.
+        * **Studio Grafico:** Il costo dello studio grafico sarà di **EUR 100 una tantum** (comprensive tutte le grafiche), che verrà fatturato sull'ordine definitivo.
         * **Costo Etichette Aggiuntive:**
             * *Etichetta 2 Colori Semplice:* **EUR 0,12 CAD.**
             * *Etichetta 2 Colori con lavorazioni particolari (3D / Lucido / Opaco):* **EUR 0,22 CAD.**
@@ -443,7 +447,10 @@ catalogo = [
         "price": 12.16,
     },
     {"cat": "WHITE LABEL HAIR CARE", "name": "SCRUB PEELING CUTE 100ML", "price": 4.72},
-    {"cat": "WHITE LABEL HAIR CARE", "name": "SHAMPOO BOTOX 250ML", "price": 5.20},
+    {"cat": "WHITE LABEL HAIR CARE",
+        "name": "SHAMPOO BOTOX 250ML",
+        "price": 5.20,
+    },
     {"cat": "WHITE LABEL HAIR CARE", "name": "MASCHERA BOTOX 250ML", "price": 6.08},
     {"cat": "WHITE LABEL HAIR CARE", "name": "SPRAY BOTOX 150ML", "price": 5.44},
     {
@@ -728,240 +735,4 @@ catalogo = [
     {"cat": "PRODOTTI NAILS", "name": "BASE RUBBER 15ML", "price": 7.20},
     {"cat": "PRODOTTI NAILS", "name": "OVERGLOSS TOP NO WIPE 15ML", "price": 9.60},
     {"cat": "PRODOTTI NAILS", "name": "OLIO CUTICOLE 15ML", "price": 4.80},
-    {"cat": "PRODOTTI NAILS", "name": "INDURENTE 15ML", "price": 4.80},
-    {"cat": "PRODOTTI NAILS", "name": "REMOVER CUTICOLE 15ML", "price": 5.60},
-    {"cat": "PRODOTTI NAILS", "name": "PRIMER 15ML", "price": 4.72},
-    {"cat": "PRODOTTI NAILS", "name": "BASE/TOP 15ML", "price": 10.40},
-    {"cat": "PRODOTTI NAILS", "name": "CLEANSER 250ML", "price": 3.92},
-    {"cat": "PRODOTTI NAILS", "name": "CLEANSER 500ML", "price": 5.52},
-    {"cat": "PRODOTTI NAILS", "name": "CLEANSER 1000ML", "price": 8.72},
-    {"cat": "PRODOTTI NAILS", "name": "REMOVER SEMIPERMANENTE 250ML", "price": 3.92},
-    {"cat": "PRODOTTI NAILS", "name": "REMOVER SEMIPERMANENTE 1000ML", "price": 8.72},
-    {"cat": "PRODOTTI NAILS", "name": "ACETONE PURO 1000ML", "price": 6.88},
-    {"cat": "PRODOTTI NAILS", "name": "ACRYGEL SOLUTION 100ML", "price": 4.72},
-]
-
-if "qtys" not in st.session_state:
-    st.session_state.qtys = {i: 0 for i in range(len(catalogo))}
-
-current_category = ""
-subtotal = 0.0
-
-for i, prod in enumerate(catalogo):
-    if prod["cat"] != current_category:
-        current_category = prod["cat"]
-        st.markdown(f"**📂 {current_category}**")
-
-    cols = st.columns([3, 1, 1])
-    with cols[0]:
-        st.write(f"{prod['name']} (€ {prod['price']:.2f})")
-    with cols[1]:
-        st.session_state.qtys[i] = st.number_input(
-            "Q.tà",
-            min_value=0,
-            max_value=999,
-            value=st.session_state.qtys[i],
-            key=f"prod_{i}",
-            label_visibility="collapsed",
-        )
-    with cols[2]:
-        tot_item = prod["price"] * st.session_state.qtys[i]
-        subtotal += tot_item
-        st.write(f"€ {tot_item:.2f}")
-
-shipping = 10.0 if subtotal > 0 else 0.0
-vat = (subtotal + shipping) * 0.22
-total = subtotal + shipping + vat
-
-st.markdown("---")
-
-# 🎨 BLOCCO SCELTA GRAFICHE (CHECKBOX)
-st.subheader("🎨 Gestione Grafiche")
-col_g1, col_g2 = st.columns(2)
-with col_g1:
-    grafica_cliente = st.checkbox("Grafiche fornite dal cliente")
-with col_g2:
-    grafica_reparto = st.checkbox(
-        "Grafiche gestite dal nostro reparto grafico"
-    )
-
-st.markdown("---")
-
-note_ordine = st.text_area(
-    "📝 Note aggiuntive per questo ordine specifico (opzionale)",
-    placeholder="Inserisci eventuali note extra...",
-)
-
-st.markdown("---")
-st.markdown("### 📊 Riepilogo Totali")
-st.write(f"**Imponibile:** € {subtotal:.2f}")
-st.write(f"**Trasporto:** € {shipping:.2f}")
-st.write(f"**IVA 22%:** € {vat:.2f}")
-st.markdown(f"### **TOTALE IVATO: € {total:.2f}**")
-
-
-# Funzione per generare il PDF dell'ordine pulito e valido al 100%
-def genera_pdf():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-
-    def clean_text(txt):
-        if not txt:
-            return ""
-        replacements = {
-            "à": "a'",
-            "è": "e'",
-            "é": "e'",
-            "ì": "i'",
-            "ò": "o'",
-            "ù": "u'",
-            "’": "'",
-            "“": '"',
-            "”": '"',
-            "«": '"',
-            "»": '"',
-            "€": "EUR",
-            "≈": "",
-            "•": "-",
-        }
-        for orig, repl in replacements.items():
-            txt = txt.replace(orig, repl)
-        return txt.encode("latin-1", "replace").decode("latin-1")
-
-    # Intestazione Brand Completa nel PDF
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 6, clean_text("CREA LA TUA LINEA"), 0, 1, "C")
-    pdf.set_font("Arial", "B", 20)
-    pdf.cell(0, 10, clean_text("YOUBRAND"), 0, 1, "C")
-    pdf.set_font("Arial", "B", 9)
-    pdf.cell(
-        0,
-        5,
-        clean_text(
-            "PRODOTTI PERSONALIZZATI PER BARBER, PARRUCCHIERI ED ESTETISTE"
-        ),
-        0,
-        1,
-        "C",
-    )
-    pdf.ln(8)
-
-    # Dati Anagrafici
-    pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 7, clean_text("ANAGRAFICA CLIENTE / SALONE"), 0, 1, "L")
-    pdf.set_font("Arial", "", 10)
-    pdf.cell(
-        0, 6, clean_text(f"Ragione Sociale: {ragione_sociale}"), 0, 1, "L"
-    )
-    pdf.cell(
-        0,
-        6,
-        clean_text(
-            f"Indirizzo: {indirizzo} - {cap} {citta} ({provincia})"
-        ),
-        0,
-        1,
-        "L",
-    )
-    pdf.cell(0, 6, clean_text(f"P.IVA: {piva} | C.F.: {cf}"), 0, 1, "L")
-    pdf.cell(
-        0, 6, clean_text(f"Telefono: {telefono} | Email: {email}"), 0, 1, "L"
-    )
-    pdf.cell(
-        0, 6, clean_text(f"Codice Univoco / PEC: {codice_univoco}"), 0, 1, "L"
-    )
-    pdf.ln(8)
-
-    # Tabella Prodotti
-    pdf.set_font("Arial", "B", 11)
-    pdf.cell(0, 7, clean_text("PRODOTTI ORDINATI"), 0, 1, "L")
-    pdf.set_font("Arial", "B", 10)
-    pdf.cell(110, 7, clean_text("Prodotto"), 1)
-    pdf.cell(20, 7, clean_text("Q.ta"), 1, 0, "C")
-    pdf.cell(30, 7, clean_text("Prezzo U."), 1, 0, "R")
-    pdf.cell(30, 7, clean_text("Totale"), 1, 1, "R")
-
-    pdf.set_font("Arial", "", 9)
-    for i, prod in enumerate(catalogo):
-        qta = st.session_state.qtys[i]
-        if qta > 0:
-            tot_prod = prod["price"] * qta
-            pdf.cell(110, 6, clean_text(str(prod["name"][:50])), 1)
-            pdf.cell(20, 6, str(qta), 1, 0, "C")
-            pdf.cell(30, 6, f"EUR {prod['price']:.2f}", 1, 0, "R")
-            pdf.cell(30, 6, f"EUR {tot_prod:.2f}", 1, 1, "R")
-
-    pdf.ln(5)
-
-    # SEZIONE SCELTA GRAFICHE NEL PDF
-    pdf.set_font("Arial", "B", 10)
-    pdf.cell(0, 6, clean_text("GESTIONE GRAFICHE:"), 0, 1, "L")
-    pdf.set_font("Arial", "", 9)
-    val_g1 = "[X] Grafiche fornite dal cliente" if grafica_cliente else "[ ] Grafiche fornite dal cliente"
-    val_g2 = "[X] Grafiche gestite dal nostro reparto grafico" if grafica_reparto else "[ ] Grafiche gestite dal nostro reparto grafico"
-    pdf.cell(0, 5, clean_text(val_g1), 0, 1, "L")
-    pdf.cell(0, 5, clean_text(val_g2), 0, 1, "L")
-    pdf.ln(5)
-
-    # Totali
-    pdf.set_font("Arial", "B", 10)
-    pdf.cell(160, 6, clean_text("Imponibile:"), 0, 0, "R")
-    pdf.cell(30, 6, f"EUR {subtotal:.2f}", 0, 1, "R")
-    pdf.cell(160, 6, clean_text("Trasporto:"), 0, 0, "R")
-    pdf.cell(30, 6, f"EUR {shipping:.2f}", 0, 1, "R")
-    pdf.cell(160, 6, clean_text("IVA 22%:"), 0, 0, "R")
-    pdf.cell(30, 6, f"EUR {vat:.2f}", 0, 1, "R")
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(160, 8, clean_text("TOTALE IVATO:"), 0, 0, "R")
-    pdf.cell(30, 8, f"EUR {total:.2f}", 0, 1, "R")
-    pdf.ln(8)
-
-    # NOTE AGGIUNTIVE SPECIFICHE
-    if note_ordine.strip():
-        pdf.set_font("Arial", "B", 9)
-        pdf.cell(0, 5, clean_text("NOTE AGGIUNTIVE:"), 0, 1, "L")
-        pdf.set_font("Arial", "", 8)
-        pdf.multi_cell(0, 4, clean_text(note_ordine.strip()), 1)
-        pdf.ln(5)
-
-    # NOTE E CONDIZIONI FISSE
-    pdf.set_font("Arial", "B", 9)
-    pdf.cell(0, 5, clean_text("NOTE E CONDIZIONI GENERALI:"), 0, 1, "L")
-    pdf.set_font("Arial", "", 7)
-
-    testo_note = (
-        "- Inviare l'ordine ed eventuali file grafici (possibilmente vettoriale) per email a : grafica@youbrand.info ,  con indicazione sui colori preferiti per l'etichetta.\n"
-        "- Nel caso di un ordine di prova, verra' prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.\n"
-        "- L'ordine minimo per la personalizzazione sara' di 12 pz per referenza minimo 6 referenze.\n"
-        "- Il costo dello studio grafico sara' di EUR 100 una tantum (comprensive tutte le grafiche), che verra' fatturato sull'ordine definitivo. A meno che provvediate voi a fornirci le grafiche.\n"
-        "- Il costo di ogni etichetta da aggiungere al prodotto sara' cosi' determinato:\n"
-        "  * COSTO ETICHETTA A 2 COLORI SEMPLICE EUR 0,12 CAD.\n"
-        "  * COSTO ETICHETTA A 2 COLORI CON LAVORAZIONI PARTICOLARI ANCHE 3D E/O LUCIDO/OPACO EUR 0,22 CAD.\n"
-        "  * COSTO ETICHETTA QUADRICROMIA CON LAVORAZIONI ANCHE PARTICOLARI 3D E/O LUCIDO/OPACO EUR 0,32 CAD.\n"
-        "- Inoltre possiamo effettuare REALIZZAZIONE FOTO PRODOTTI E BROCHURE PDF DELLA LINEA PER CONTO DEL CLIENTE EUR 150,00"
-    )
-
-    pdf.multi_cell(0, 3.5, clean_text(testo_note), 1)
-
-    # Output binario pulito per Streamlit
-    pdf_output = pdf.output(dest="S")
-    if isinstance(pdf_output, str):
-        return pdf_output.encode("latin-1")
-    return bytes(pdf_output)
-
-
-# Generazione e pulsante di scaricamento PDF
-if not ragione_sociale.strip() or subtotal == 0:
-    st.info(
-        "Compila la Ragione Sociale e seleziona almeno un prodotto per abilitare il download del PDF."
-    )
-else:
-    pdf_data = genera_pdf()
-
-    st.download_button(
-        label="📄 Scarica Ordine in PDF",
-        data=pdf_data,
-        file_name=f"Ordine_{ragione_sociale.replace(' ', '_')}.pdf",
-        mime="application/pdf",
-    )
+    {"cat": "PRODOTTI NAILS", "name": "IND
