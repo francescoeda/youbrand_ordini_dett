@@ -87,6 +87,7 @@ with st.expander(
             * *Etichetta 2 Colori con lavorazioni particolari (3D / Lucido / Opaco):* **EUR 0,22 CAD.**
             * *Etichetta Quadricromia con lavorazioni particolari (3D / Lucido / Opaco):* **EUR 0,32 CAD.**
         * **Servizi Extra:** Realizzazione foto prodotti e brochure PDF della linea per conto del cliente: **EUR 150,00**.
+        * **Tempi di lavorazione :** *Circa 20 gg per il primo ordine (anche in base alla conferma o invio delle grafiche).* *Più veloce per i riordini.*
         """
     )
 
