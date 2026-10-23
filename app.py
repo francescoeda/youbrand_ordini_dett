@@ -1024,7 +1024,7 @@ else:
             email_inviata = invia_email_ordine(pdf_data, nome_file_pdf)
             if email_inviata:
                 st.success(
-                    "Email inviata con successo a info@youbrand.info[cite: 4]!"
+                    "Email inviata con successo a info@youbrand.info"
                 )
 
         st.download_button(
