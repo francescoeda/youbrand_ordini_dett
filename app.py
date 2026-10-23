@@ -956,6 +956,7 @@ def genera_pdf():
         "  * COSTO ETICHETTA A 2 COLORI CON LAVORAZIONI PARTICOLARI ANCHE 3D E/O LUCIDO/OPACO EUR 0,22 CAD.\n"
         "  * COSTO ETICHETTA QUADRICROMIA CON LAVORAZIONI ANCHE PARTICOLARI 3D E/O LUCIDO/OPACO EUR 0,32 CAD.\n"
         "- Inoltre possiamo effettuare REALIZZAZIONE FOTO PRODOTTI E BROCHURE PDF DELLA LINEA PER CONTO DEL CLIENTE EUR 150,00"
+        "-Tempi di lavorazione : Circa 20 gg per il primo ordine (anche in base alla conferma o invio delle grafiche).* *Più veloce per i riordini.
     )
 
     pdf.multi_cell(0, 3.5, clean_text(testo_note), 1)
