@@ -973,7 +973,7 @@ def invia_email_ordine(pdf_bytes, nome_file):
     smtp_server = "mail.tophost.it"
     smtp_port = 587
     smtp_user = "youbrand.info"
-    smtp_pass = "youbrand1997@"
+    smtp_pass = "Youbrand1997@!"
 
     destinatario = "info@youbrand.info"
     oggetto = "modulo compilato dal sito"
