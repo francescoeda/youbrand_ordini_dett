@@ -78,7 +78,7 @@ with st.expander(
 ):
     st.markdown(
         """
-        * **Invio File Logo:** Potrai Allegare direttamente qui il tuo logo (possibilmente vettorialecon estensione SVG o PDF) con indicazione nelle note              sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
+        * **Invio File Logo:** Potrai Allegare direttamente qui il tuo logo (possibilmente vettoriale con estensione SVG o PDF) con indicazione nelle note sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
         * **Nel caso scelga di far fare tu le tue grafiche**, *riceverai nei prossimi giorni per email, tutte le specifiche in merito.*
         * **Ordine di Prova:** Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.
         * **Minimi d'Ordine:** L'ordine minimo per la personalizzazione sarà di **12 pz per referenza**, per un **minimo di 6 referenze**.
@@ -784,15 +784,21 @@ total = subtotal + shipping + vat
 
 st.markdown("---")
 
-# 🎨 BLOCCO SCELTA GRAFICHE (CHECKBOX E CARICAMENTO MULTIPLO FILE)
+# 🎨 BLOCCO SCELTA GRAFICHE (RADIO BUTTON ESCLUSIVO E CARICAMENTO MULTIPLO FILE)
 st.subheader("🎨 Gestione Grafiche")
-col_g1, col_g2 = st.columns(2)
-with col_g1:
-    grafica_cliente = st.checkbox("Grafiche fornite dal cliente")
-with col_g2:
-    grafica_reparto = st.checkbox(
-        "Grafiche gestite dal nostro reparto grafico"
-    )
+
+scelta_grafica = st.radio(
+    "Seleziona la modalità di gestione delle grafiche:",
+    (
+        "Grafiche fornite dal cliente",
+        "Grafiche gestite dal nostro reparto grafico",
+    ),
+    index=0,
+)
+
+# Definiamo le variabili booleane in base alla scelta esclusiva del radio button
+grafica_cliente = scelta_grafica == "Grafiche fornite dal cliente"
+grafica_reparto = scelta_grafica == "Grafiche gestite dal nostro reparto grafico"
 
 if grafica_cliente:
     st.info("ℹ️ Nei prossimi giorni riceverai le specifiche delle grafiche da inviarci.")
@@ -986,7 +992,7 @@ def genera_pdf():
     pdf.set_font("Arial", "", 7)
 
     testo_note = (
-        "- Potrai Aggiungere autonomamente i file del Tuo Logo, possibilmente vettoriale con estensione SVG o PDF, se sceglierai di affidare a noi lo             studio grafico, con indicazione sui colori preferiti per l'etichetta (da segnalare nelle note).\n"
+        "- Potrai Aggiungere autonomamente i file del Tuo Logo, possibilmente vettoriale con estensione SVG o PDF, se sceglierai di affidare a noi lo studio grafico, con indicazione sui colori preferiti per l'etichetta (da segnalare nelle note).\n"
         "- Nel caso scelga di far fare tu le tue grafiche, riceverai nei prossimi giorni per email, tutte le specifiche in merito\n"
         "- L'ordine minimo per la personalizzazione sara' di 12 pz per referenza minimo 6 referenze.\n"
         "- Il costo dello studio grafico sara' di EUR 100 una tantum (comprensive tutte le grafiche), che verra' fatturato sull'ordine definitivo.\n"
@@ -1057,7 +1063,7 @@ In allegato trovi il file PDF con il riepilogo dell'ordine.
             msg.attach(att_grafica)
 
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
+        server = smtplib.SMTP(smtp_server,smtp_port)
         server.starttls()
         server.login(smtp_user, smtp_pass)
         server.sendmail("info@youbrand.info", destinatario, msg.as_string())
