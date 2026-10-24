@@ -78,7 +78,8 @@ with st.expander(
 ):
     st.markdown(
         """
-        * **Invio File Logo:** Inviare l'ordine per email allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
+        * **Invio File Logo:** Potrai Allegare direttamente qui il tuo logo (possibilmente vettorialecon estensione SVG o PDF) con indicazione nelle note sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
+        * **Nel caso scelga di far fare tu le tue grafiche**, *riceverai nei prossimi giorni per email, tutte le specifiche in merito.*
         * **Ordine di Prova:** Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.
         * **Minimi d'Ordine:** L'ordine minimo per la personalizzazione sarà di **12 pz per referenza**, per un **minimo di 6 referenze**.
         * **Studio Grafico:** Il costo dello studio grafico sarà di **EUR 100 una tantum** (comprensive tutte le grafiche), che verrà fatturato sull'ordine definitivo.
@@ -87,7 +88,6 @@ with st.expander(
             * *Etichetta 2 Colori con lavorazioni particolari (3D / Lucido / Opaco):* **EUR 0,22 CAD.**
             * *Etichetta Quadricromia con lavorazioni particolari (3D / Lucido / Opaco):* **EUR 0,32 CAD.**
         * **Servizi Extra:** Realizzazione foto prodotti e brochure PDF della linea per conto del cliente: **EUR 150,00**.
-        * **Tempi di lavorazione :** *Circa* **20 gg** *per il primo ordine (anche in base alla conferma o invio delle grafiche).* *Più veloce per i riordini.*
         """
     )
 
@@ -448,10 +448,7 @@ catalogo = [
         "price": 12.16,
     },
     {"cat": "WHITE LABEL HAIR CARE", "name": "SCRUB PEELING CUTE 100ML", "price": 4.72},
-    {"cat": "WHITE LABEL HAIR CARE",
-        "name": "SHAMPOO BOTOX 250ML",
-        "price": 5.20,
-    },
+    {"cat": "WHITE LABEL HAIR CARE", "name": "SHAMPOO BOTOX 250ML", "price": 5.20},
     {"cat": "WHITE LABEL HAIR CARE", "name": "MASCHERA BOTOX 250ML", "price": 6.08},
     {"cat": "WHITE LABEL HAIR CARE", "name": "SPRAY BOTOX 150ML", "price": 5.44},
     {
@@ -783,7 +780,7 @@ total = subtotal + shipping + vat
 
 st.markdown("---")
 
-# 🎨 BLOCCO SCELTA GRAFICHE (CHECKBOX)
+# 🎨 BLOCCO SCELTA GRAFICHE (CHECKBOX E CARICAMENTO MULTIPLO FILE)
 st.subheader("🎨 Gestione Grafiche")
 col_g1, col_g2 = st.columns(2)
 with col_g1:
@@ -791,6 +788,19 @@ with col_g1:
 with col_g2:
     grafica_reparto = st.checkbox(
         "Grafiche gestite dal nostro reparto grafico"
+    )
+
+uploaded_files = None
+if grafica_reparto:
+    st.info(
+        "📂 Carica qui i file logo/grafica per il nostro reparto grafico (puoi"
+        " selezionare più file):"
+    )
+    uploaded_files = st.file_uploader(
+        "Seleziona i file della grafica",
+        type=["svg", "pdf"],
+        help="Formati supportati: .SVG o .PDF",
+        accept_multiple_files=True,
     )
 
 st.markdown("---")
@@ -918,6 +928,16 @@ def genera_pdf():
     )
     pdf.cell(0, 5, clean_text(val_g1), 0, 1, "L")
     pdf.cell(0, 5, clean_text(val_g2), 0, 1, "L")
+    if uploaded_files:
+        for f in uploaded_files:
+            pdf.cell(
+                0,
+                5,
+                clean_text(f"  -> File Grafico Allegato: {f.name}"),
+                0,
+                1,
+                "L",
+            )
     pdf.ln(5)
 
     # Totali
@@ -947,7 +967,8 @@ def genera_pdf():
     pdf.set_font("Arial", "", 7)
 
     testo_note = (
-        "- Inviare l'ordine per email allegando il logo (possibilmente vettoriale) con indicazione sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).\n"
+        "- Potrai Aggiungere autonomamente i file del Tuo Logo, possibilmente vettoriale con estensione SVG o PDF, se sceglierai di affidare a noi lo studio grafico, con indicazione sui colori preferiti per l'etichetta (da segnalare nelle note).\n"
+        "- Nel caso scelga di far fare tu le tue grafiche, riceverai nei prossimi giorni per email, tutte le specifiche in merito.\n"
         "- Nel caso di un ordine di prova, verra' prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.\n"
         "- L'ordine minimo per la personalizzazione sara' di 12 pz per referenza minimo 6 referenze.\n"
         "- Il costo dello studio grafico sara' di EUR 100 una tantum (comprensive tutte le grafiche), che verra' fatturato sull'ordine definitivo.\n"
@@ -956,7 +977,6 @@ def genera_pdf():
         "  * COSTO ETICHETTA A 2 COLORI CON LAVORAZIONI PARTICOLARI ANCHE 3D E/O LUCIDO/OPACO EUR 0,22 CAD.\n"
         "  * COSTO ETICHETTA QUADRICROMIA CON LAVORAZIONI ANCHE PARTICOLARI 3D E/O LUCIDO/OPACO EUR 0,32 CAD.\n"
         "- Inoltre possiamo effettuare REALIZZAZIONE FOTO PRODOTTI E BROCHURE PDF DELLA LINEA PER CONTO DEL CLIENTE EUR 150,00"
-        "- Tempi di lavorazione : Circa 20 gg per il primo ordine (anche in base alla conferma o invio delle grafiche). Più veloce per i riordini."
     )
 
     pdf.multi_cell(0, 3.5, clean_text(testo_note), 1)
@@ -968,8 +988,8 @@ def genera_pdf():
     return bytes(pdf_output)
 
 
-# Funzione per inviare l'email via SMTP (Tophost)
-def invia_email_ordine(pdf_bytes, nome_file):
+# Funzione per inviare l'email via SMTP (Tophost) con supporto a file multipli
+def invia_email_ordine(pdf_bytes, nome_file_pdf, files_grafica=None):
     smtp_server = "mail.tophost.it"
     smtp_port = 587
     smtp_user = "youbrand.info"
@@ -991,12 +1011,29 @@ Telefono: {telefono}
 
 In allegato trovi il file PDF con il riepilogo dell'ordine.
 """
+    if files_grafica:
+        corpo += "\nSono stati allegati i seguenti file grafici dal cliente:\n"
+        for f in files_grafica:
+            corpo += f"- {f.name}\n"
+
     msg.attach(MIMEText(corpo, "plain"))
 
-    # Allegato PDF
-    att = MIMEApplication(pdf_bytes, _subtype="pdf")
-    att.add_header("Content-Disposition", "attachment", filename=nome_file)
-    msg.attach(att)
+    # Allegato PDF Ordine
+    att_pdf = MIMEApplication(pdf_bytes, _subtype="pdf")
+    att_pdf.add_header(
+        "Content-Disposition", "attachment", filename=nome_file_pdf
+    )
+    msg.attach(att_pdf)
+
+    # Allegati Grafiche Multiple (se presenti)
+    if files_grafica:
+        for f in files_grafica:
+            file_ext = f.name.split(".")[-1].lower()
+            att_grafica = MIMEApplication(f.getvalue(), _subtype=file_ext)
+            att_grafica.add_header(
+                "Content-Disposition", "attachment", filename=f.name
+            )
+            msg.attach(att_grafica)
 
     try:
         server = smtplib.SMTP(smtp_server, smtp_port)
@@ -1020,11 +1057,13 @@ else:
     nome_file_pdf = f"Ordine_{ragione_sociale.replace(' ', '_')}.pdf"
 
     if st.button("Invia e scarica il modulo compilato"):
-        with st.spinner("Invio email in corso e preparazione del file..."):
-            email_inviata = invia_email_ordine(pdf_data, nome_file_pdf)
+        with st.spinner("Invio email in corso e preparazione dei file..."):
+            email_inviata = invia_email_ordine(
+                pdf_data, nome_file_pdf, files_grafica=uploaded_files
+            )
             if email_inviata:
                 st.success(
-                    "Email inviata con successo a info@youbrand.info"
+                    "Email inviata con successo a info@youbrand.info!"
                 )
 
         st.download_button(
