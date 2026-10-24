@@ -831,12 +831,8 @@ st.write(f"**IVA 22%:** € {vat:.2f}")
 st.markdown(f"### **TOTALE IVATO: € {total:.2f}**")
 
 
-# Funzione per generare il PDF dell'ordine pulito e valido al 100%
+# Funzione per generare il PDF dell'ordine con piè di pagina aziendale
 def genera_pdf():
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_auto_page_break(auto=True, margin=15)
-
     def clean_text(txt):
         if not txt:
             return ""
@@ -859,6 +855,18 @@ def genera_pdf():
         for orig, repl in replacements.items():
             txt = txt.replace(orig, repl)
         return txt.encode("latin-1", "replace").decode("latin-1")
+
+    # Classe personalizzata per aggiungere il footer in calce a ogni pagina
+    class CustomPDF(FPDF):
+        def footer(self):
+            self.set_y(-18)
+            self.set_font("Arial", "", 6.5)
+            footer_text = "New Cosmetics Srl - Via Prenestina Nuova 307/A - 00036 Palestrina (RM) - +39 0694771137 - P.iva/C.F. 05425991006, email: info@youbrand.info"
+            self.cell(0, 10, clean_text(footer_text), 0, 0, "C")
+
+    pdf = CustomPDF()
+    pdf.add_page()
+    pdf.set_auto_page_break(auto=True, margin=20)
 
     # Intestazione Brand Completa nel PDF
     pdf.set_font("Arial", "B", 12)
@@ -1063,7 +1071,7 @@ In allegato trovi il file PDF con il riepilogo dell'ordine.
             msg.attach(att_grafica)
 
     try:
-        server = smtplib.SMTP(smtp_server,smtp_port)
+        server = smtplib.SMTP(smtp_server, smtp_port)
         server.starttls()
         server.login(smtp_user, smtp_pass)
         server.sendmail("info@youbrand.info", destinatario, msg.as_string())
