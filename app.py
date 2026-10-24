@@ -78,7 +78,7 @@ with st.expander(
 ):
     st.markdown(
         """
-        * **Invio File Logo:** Potrai Allegare direttamente qui il tuo logo (possibilmente vettoriale con estensione SVG o PDF) con indicazione nelle note sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
+        * **Invio File Logo:** Potrai Allegare direttamente qui il tuo logo (possibilmente vettorialecon estensione SVG o PDF) con indicazione nelle note              sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
         * **Nel caso scelga di far fare tu le tue grafiche**, *riceverai nei prossimi giorni per email, tutte le specifiche in merito.*
         * **Ordine di Prova:** Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.
         * **Minimi d'Ordine:** L'ordine minimo per la personalizzazione sarà di **12 pz per referenza**, per un **minimo di 6 referenze**.
@@ -448,7 +448,11 @@ catalogo = [
         "price": 12.16,
     },
     {"cat": "WHITE LABEL HAIR CARE", "name": "SCRUB PEELING CUTE 100ML", "price": 4.72},
-    {"cat": "WHITE LABEL HAIR CARE", "name": "SHAMPOO BOTOX 250ML", "price": 5.20},
+    {
+        "cat": "WHITE LABEL HAIR CARE",
+        "name": "SHAMPOO BOTOX 250ML",
+        "price": 5.20,
+    },
     {"cat": "WHITE LABEL HAIR CARE", "name": "MASCHERA BOTOX 250ML", "price": 6.08},
     {"cat": "WHITE LABEL HAIR CARE", "name": "SPRAY BOTOX 150ML", "price": 5.44},
     {
@@ -790,6 +794,9 @@ with col_g2:
         "Grafiche gestite dal nostro reparto grafico"
     )
 
+if grafica_cliente:
+    st.info("ℹ️ Nei prossimi giorni riceverai le specifiche delle grafiche da inviarci.")
+
 uploaded_files = None
 if grafica_reparto:
     st.info(
@@ -927,6 +934,18 @@ def genera_pdf():
         else "[ ] Grafiche gestite dal nostro reparto grafico"
     )
     pdf.cell(0, 5, clean_text(val_g1), 0, 1, "L")
+    if grafica_cliente:
+        pdf.cell(
+            0,
+            5,
+            clean_text(
+                "  -> Nei prossimi giorni riceverai le specifiche delle grafiche"
+                " da inviarci."
+            ),
+            0,
+            1,
+            "L",
+        )
     pdf.cell(0, 5, clean_text(val_g2), 0, 1, "L")
     if uploaded_files:
         for f in uploaded_files:
@@ -967,9 +986,8 @@ def genera_pdf():
     pdf.set_font("Arial", "", 7)
 
     testo_note = (
-        "- Potrai Aggiungere autonomamente i file del Tuo Logo, possibilmente vettoriale con estensione SVG o PDF, se sceglierai di affidare a noi lo studio grafico, con indicazione sui colori preferiti per l'etichetta (da segnalare nelle note).\n"
-        "- Nel caso scelga di far fare tu le tue grafiche, riceverai nei prossimi giorni per email, tutte le specifiche in merito.\n"
-        "- Nel caso di un ordine di prova, verra' prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.\n"
+        "- Potrai Aggiungere autonomamente i file del Tuo Logo, possibilmente vettoriale con estensione SVG o PDF, se sceglierai di affidare a noi lo             studio grafico, con indicazione sui colori preferiti per l'etichetta (da segnalare nelle note).\n"
+        "- Nel caso scelga di far fare tu le tue grafiche, riceverai nei prossimi giorni per email, tutte le specifiche in merito\n"
         "- L'ordine minimo per la personalizzazione sara' di 12 pz per referenza minimo 6 referenze.\n"
         "- Il costo dello studio grafico sara' di EUR 100 una tantum (comprensive tutte le grafiche), che verra' fatturato sull'ordine definitivo.\n"
         "- Il costo di ogni etichetta da aggiungere al prodotto sara' cosi' determinato:\n"
@@ -1011,6 +1029,9 @@ Telefono: {telefono}
 
 In allegato trovi il file PDF con il riepilogo dell'ordine.
 """
+    if grafica_cliente:
+        corpo += "\nNota: Il cliente ha scelto 'Grafiche fornite dal cliente' (nei prossimi giorni riceverà le specifiche delle grafiche da inviare).\n"
+
     if files_grafica:
         corpo += "\nSono stati allegati i seguenti file grafici dal cliente:\n"
         for f in files_grafica:
