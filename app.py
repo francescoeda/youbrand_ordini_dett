@@ -78,7 +78,7 @@ with st.expander(
 ):
     st.markdown(
         """
-        * **Invio File Logo:** Potrai Allegare direttamente qui il tuo logo (possibilmente vettorialecon estensione SVG o PDF) con indicazione nelle note sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
+        * **Invio File Logo:** Potrai Allegare direttamente qui il tuo logo (possibilmente vettoriale con estensione SVG o PDF) con indicazione nelle note sui colori preferiti per l'etichetta (solo per il primo ordine o ordine di prova).
         * **Nel caso scelga di far fare tu le tue grafiche**, *riceverai nei prossimi giorni per email, tutte le specifiche in merito.*
         * **Ordine di Prova:** Nel caso di un ordine di prova, verrà prodotta una sola grafica (etichetta) su un prodotto a scelta da indicare nell'email.
         * **Minimi d'Ordine:** L'ordine minimo per la personalizzazione sarà di **12 pz per referenza**, per un **minimo di 6 referenze**.
